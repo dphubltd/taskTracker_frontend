@@ -12,7 +12,6 @@ import {
   User,
   Circle,
   Calendar,
-  FileText,
   Menu,
   Search,
 } from "lucide-react";
@@ -39,7 +38,7 @@ export default function AdminDashboard() {
       if (filter) params.filter = filter;
       if (q) params.q = q;
       const allTasks = await api.getAllStaffTasks(
-        Object.keys(params).length ? (params as any) : undefined
+        Object.keys(params).length ? (params as any) : undefined,
       );
       setTasks(allTasks.info || allTasks || []);
     } catch (err: any) {
@@ -82,6 +81,11 @@ export default function AdminDashboard() {
     fetchTasks(taskFilter, taskSearch);
   };
 
+  useEffect(() => {
+    const t = setTimeout(() => fetchTasks(taskFilter, taskSearch), 300);
+    return () => clearTimeout(t);
+  }, [taskSearch]);
+
   const getInitials = (name: string) => {
     if (!name) return "?";
     return name
@@ -107,7 +111,7 @@ export default function AdminDashboard() {
         )}
 
         <aside
-          className={`w-64 bg-white border-r border-gray-100 flex flex-col justify-between fixed h-full z-[90] transition-transform duration-200 ${
+          className={`w-64 bg-white border-r border-gray-100 flex flex-col justify-between fixed h-full z-[90] lg:z-20 transition-transform duration-200 ${
             sidebarOpen ? "translate-x-0" : "-translate-x-full"
           } md:translate-x-0`}
         >
@@ -186,7 +190,7 @@ export default function AdminDashboard() {
         </aside>
 
         <div className="flex-1 md:pl-64 flex flex-col">
-          <header className="bg-white h-20 border-b border-gray-100 px-4 md:px-8 flex items-center justify-between sticky top-0 z-[100]">
+          <header className="bg-white h-20 border-b border-gray-100 px-4 md:px-8 flex items-center justify-between sticky top-0 z-[100] lg:z-20">
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setSidebarOpen(true)}
@@ -428,18 +432,11 @@ export default function AdminDashboard() {
                         type="text"
                         value={taskSearch}
                         onChange={(e) => setTaskSearch(e.target.value)}
-                        onKeyDown={(e) => e.key === "Enter" && handleSearch()}
                         placeholder="Search tasks..."
                         className="w-44 pl-8 pr-3 py-1.5 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#003A47] focus:border-[#003A47]"
                       />
                       <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
                     </div>
-                    <button
-                      onClick={handleSearch}
-                      className="text-xs font-semibold text-white bg-[#003A47] px-3 py-1.5 rounded-lg hover:bg-[#002b35] transition-colors"
-                    >
-                      Search
-                    </button>
                   </div>
                   <button
                     onClick={() => setActiveView("tasks")}
@@ -638,12 +635,10 @@ export default function AdminDashboard() {
                     </div>
                     <div className="w-48 flex items-center gap-2.5 border border-gray-200 rounded-lg px-3 py-1.5 bg-white">
                       <div className="w-6 h-6 rounded-full bg-[#5D5755] flex items-center justify-center text-[10px] font-bold text-white uppercase tracking-wider">
-                        {getInitials(
-                          selectedTask.employee_name || selectedTask.employee,
-                        )}
+                        {getInitials(selectedTask.staff_name)}
                       </div>
                       <span className="text-xs font-semibold text-gray-800">
-                        {selectedTask.employee_name || selectedTask.employee}
+                        {selectedTask.staff_name}
                       </span>
                     </div>
                   </div>
@@ -684,40 +679,6 @@ export default function AdminDashboard() {
                     </div>
                     <div className="w-48 text-sm font-semibold text-gray-800">
                       {formatDate(selectedTask.completion_date)}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-3 pt-2">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 bg-white">
-                      <FileText className="w-4 h-4 text-gray-400" />
-                      <span className="font-medium">Blocker (1)</span>
-                    </div>
-                    <button className="text-sm font-bold text-[#003A47] hover:underline">
-                      See all
-                    </button>
-                  </div>
-                  <div className="border border-gray-200 rounded-xl overflow-hidden bg-white">
-                    <div className="p-4 flex items-center justify-between border-b border-gray-100">
-                      <div className="flex items-center gap-2.5">
-                        <div className="w-7 h-7 rounded-full bg-[#5D5755] flex items-center justify-center text-[10px] font-bold text-white uppercase tracking-wider">
-                          {getInitials(
-                            selectedTask.employee_name || selectedTask.employee,
-                          )}
-                        </div>
-                        <span className="text-xs font-bold text-gray-800">
-                          {selectedTask.employee_name || selectedTask.employee}
-                        </span>
-                      </div>  
-                      <span className="text-xs font-medium text-gray-400">
-                        2hrs ago
-                      </span>
-                    </div>
-                    <div className="p-4 text-sm text-gray-800 leading-relaxed">
-                      I have a blocker designing the{" "}
-                      {selectedTask.task || selectedTask.title} due to API
-                      issues.
                     </div>
                   </div>
                 </div>

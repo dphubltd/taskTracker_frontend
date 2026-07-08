@@ -11,12 +11,11 @@ import {
   X,
   Circle,
   Calendar,
-  FileText,
-  ChevronLeft,
   Menu,
   Check,
   Pencil,
   Search,
+  ChevronLeft,
 } from "lucide-react";
 import { api, logout, formatDate } from "@/lib/api";
 import { useRouter } from "next/navigation";
@@ -86,6 +85,11 @@ export default function EmployeeDashboard() {
   const handleSearch = () => {
     fetchTasks(taskFilter, taskSearch);
   };
+
+  useEffect(() => {
+    const t = setTimeout(() => fetchTasks(taskFilter, taskSearch), 300);
+    return () => clearTimeout(t);
+  }, [taskSearch]);
 
   useEffect(() => {
     const savedName =
@@ -320,58 +324,40 @@ export default function EmployeeDashboard() {
                 <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                   <div className="bg-[#F4F8FC] p-4 rounded-lg border border-blue-50/50">
                     <p className="text-[13px] font-medium text-gray-400">
-                      Total Task Completed
+                      Total Tasks
                     </p>
-                    <p className="text-2xl font-bold text-gray-900 mt-2">40</p>
-                    <div className="flex items-center gap-1 text-[11px] text-[#003A47] font-semibold mt-2">
-                      <TrendingUp className="w-3 h-3" />
-                      <span>10%</span>
-                      <span className="text-gray-400 hidden lg:inline font-normal">
-                        from previous day
-                      </span>
-                    </div>
+                    <p className="text-2xl font-bold text-gray-900 mt-2">{tasks.length}</p>
                   </div>
 
                   <div className="bg-[#F2FBF4] p-4 rounded-lg border border-green-50/50">
                     <p className="text-[13px] truncate w-24 sm:w-28 font-medium text-gray-400">
-                      Today Submitted Tasks
+                      Today Submitted
                     </p>
-                    <p className="text-2xl font-bold text-gray-900 mt-2">4</p>
-                    <div className="flex items-center gap-1 text-[11px] text-[#2E7D32] font-semibold mt-2">
-                      <TrendingUp className="w-3 h-3" />
-                      <span>100%</span>
-                      <span className="text-gray-400 hidden lg:inline font-normal">
-                        from previous day
-                      </span>
-                    </div>
+                    <p className="text-2xl font-bold text-gray-900 mt-2">
+                      {(() => {
+                        const today = new Date();
+                        const ds = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+                        return tasks.filter(t => (t.date||'').startsWith(ds)).length;
+                      })()}
+                    </p>
                   </div>
 
                   <div className="bg-[#FFF8F8] p-4 rounded-lg border border-red-50/50">
                     <p className="text-[13px] font-medium text-gray-400">
                       Pending Tasks
                     </p>
-                    <p className="text-2xl font-bold text-gray-900 mt-2">4</p>
-                    <div className="flex items-center gap-1 text-[11px] text-[#C62828] font-semibold mt-2">
-                      <TrendingUp className="w-3 h-3" />
-                      <span>100%</span>
-                      <span className="text-gray-400 truncate w-24 sm:w-28  font-normal">
-                        from previous day
-                      </span>
-                    </div>
+                    <p className="text-2xl font-bold text-gray-900 mt-2">
+                      {tasks.filter(t => t.status !== "Completed" && t.status !== "completed").length}
+                    </p>
                   </div>
 
                   <div className="bg-[#FFFBF4] p-4 rounded-lg border border-amber-50/50">
                     <p className="text-[13px] font-medium text-gray-400">
                       Completed Tasks
                     </p>
-                    <p className="text-2xl font-bold text-gray-900 mt-2">4</p>
-                    <div className="flex items-center gap-1 text-[11px] text-[#D84315] font-semibold mt-2">
-                      <TrendingUp className="w-3 h-3" />
-                      <span>100%</span>
-                      <span className="text-gray-400 font-normal">
-                        from previous day
-                      </span>
-                    </div>
+                    <p className="text-2xl font-bold text-gray-900 mt-2">
+                      {tasks.filter(t => t.status === "Completed" || t.status === "completed").length}
+                    </p>
                   </div>
                 </div>
               </section>
@@ -402,18 +388,11 @@ export default function EmployeeDashboard() {
                         type="text"
                         value={taskSearch}
                         onChange={(e) => setTaskSearch(e.target.value)}
-                        onKeyDown={(e) => e.key === "Enter" && handleSearch()}
                         placeholder="Search tasks..."
                         className="w-44 pl-8 pr-3 py-1.5 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#003A47] focus:border-[#003A47]"
                       />
                       <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
                     </div>
-                    <button
-                      onClick={handleSearch}
-                      className="text-xs font-semibold text-white bg-[#003A47] px-3 py-1.5 rounded-lg hover:bg-[#002b35] transition-colors"
-                    >
-                      Search
-                    </button>
                   </div>
                   <button
                     onClick={() => setActiveView("tasks")}
@@ -647,37 +626,6 @@ export default function EmployeeDashboard() {
                   </div>
                 </div>
 
-                <div className="space-y-3 pt-2">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 bg-white">
-                      <FileText className="w-4 h-4 text-gray-400" />
-                      <span className="font-medium">Blocker (1)</span>
-                    </div>
-                    <button className="text-sm font-bold text-[#003A47] hover:underline">
-                      See all
-                    </button>
-                  </div>
-                  <div className="border border-gray-200 rounded-xl overflow-hidden bg-white">
-                    <div className="p-4 flex items-center justify-between border-b border-gray-100">
-                      <div className="flex items-center gap-2.5">
-                        <div className="w-7 h-7 rounded-full bg-[#003A47] flex items-center justify-center text-[10px] font-bold text-white uppercase tracking-wider">
-                          {getInitials(displayName)}
-                        </div>
-                        <span className="text-xs font-bold text-gray-800">
-                          {displayName}
-                        </span>
-                      </div>
-                      <span className="text-xs font-medium text-gray-400">
-                        2hrs ago
-                      </span>
-                    </div>
-                    <div className="p-4 text-sm text-gray-800 leading-relaxed">
-                      I have a blocker designing the{" "}
-                      {selectedTask.task || selectedTask.title} due to API
-                      issues.
-                    </div>
-                  </div>
-                </div>
               </div>
             </div>
           </>
