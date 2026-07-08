@@ -1,35 +1,40 @@
 "use client";
-import React, { useState, useEffect } from "react";
-import { Eye, EyeOff } from "lucide-react";
-import Image from "next/image";
-import { useRouter } from "next/navigation";
-import { api } from "@/lib/api";
+import { useState, useEffect } from 'react';
+import { Eye, EyeOff } from 'lucide-react';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { api } from '@/lib/api';
 
-export default function AdminLogin() {
+export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
   const router = useRouter();
 
   useEffect(() => {
     const token = typeof window !== 'undefined' && localStorage.getItem('auth_token');
     if (token) {
-      router.replace('/admin/dashboard');
+      router.replace('/dashboard');
     }
   }, [router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
+    setError('');
     setLoading(true);
     try {
-      const res = await api.adminLogin({ email, password });
-      localStorage.setItem("user_role", "admin");
-      router.push("/admin/dashboard");
+      const res = await api.login({ email, password });
+      if (res.role) {
+        localStorage.setItem('user_role', res.role);
+      }
+      if (res.dpt) {
+        localStorage.setItem('user_dept', res.dpt);
+      }
+      router.push('/dashboard');
     } catch (err: any) {
-      setError(err.message || "Login failed");
+      setError(err.message || 'Login failed');
     } finally {
       setLoading(false);
     }
@@ -38,7 +43,8 @@ export default function AdminLogin() {
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-[#E1F5FE] px-4 sm:px-6 lg:px-8 font-sans">
       <div className="w-full max-w-5xl flex flex-col md:flex-row items-center justify-between gap-8 md:gap-16">
-        <div className="w-full md:w-1/2 flex flex-col items-center justify-center text-center">
+        
+        <div className="w-full md:w-1/2 flex-col items-center justify-center text-center max-sm:hidden hidden md:flex">
           <div className="w-64 h-auto mb-4">
             <Image
               src="/logo.jpg"
@@ -56,25 +62,25 @@ export default function AdminLogin() {
           <span className="block text-gray-900 text-lg font-medium mb-6">
             Task Tracker
           </span>
-
+          
           <h2 className="text-[#003A47] text-xl font-semibold mb-1">
-            Welcome Admin
+            Welcome there!
           </h2>
           <p className="text-gray-500 text-xs mb-6">
-            Monitor all task from one sign in.
+            Login to log in your task for today.
           </p>
 
           {error && (
             <p className="text-red-500 text-xs mb-4">{error}</p>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                Email address
+                Email or Employee's unique ID
               </label>
               <input
-                type="email"
+                type="text"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="emailaddress@gmail.com"
@@ -89,7 +95,7 @@ export default function AdminLogin() {
               </label>
               <div className="relative">
                 <input
-                  type={showPassword ? "text" : "password"}
+                  type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="**********"
@@ -110,14 +116,27 @@ export default function AdminLogin() {
               </div>
             </div>
 
+            <div className="pt-1">
+              <a href="#forgot" className="text-[#003A47] text-xs font-semibold hover:underline">
+                Forgot Password?
+              </a>
+            </div>
+
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-[#003A47] text-white py-3 px-4 rounded-md font-medium text-sm hover:bg-[#002b35] transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#003A47] mt-8 disabled:opacity-50"
+              className="w-full bg-[#003A47] text-white py-3 px-4 rounded-md font-medium text-sm hover:bg-[#002b35] transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#003A47] mt-4 disabled:opacity-50"
             >
-              {loading ? "Logging in..." : "Login"}
+              {loading ? 'Logging in...' : 'Login'}
             </button>
           </form>
+
+          <div className="text-xs text-gray-600 text-left mt-5">
+            Don't have an account yet?{' '}
+            <a href="/signup" className="text-[#003A47] font-semibold hover:underline">
+              Create an Account
+            </a>
+          </div>
         </div>
       </div>
     </div>
