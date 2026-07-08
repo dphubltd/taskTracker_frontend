@@ -61,7 +61,7 @@ export default function AdminDashboard() {
         err.message?.includes("Authenticate") ||
         err.message?.includes("credentials")
       ) {
-        router.push("/admin");
+        router.push("/login");
         return;
       }
     }
@@ -97,7 +97,7 @@ export default function AdminDashboard() {
 
   const handleLogout = () => {
     logout();
-    router.push("/admin");
+    router.push("/login");
   };
 
   return (

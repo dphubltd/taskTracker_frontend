@@ -16,7 +16,8 @@ export default function Login() {
   useEffect(() => {
     const token = typeof window !== 'undefined' && localStorage.getItem('auth_token');
     if (token) {
-      router.replace('/dashboard');
+      const isAdmin = localStorage.getItem('user_is_admin');
+      router.replace(isAdmin === 'true' ? '/admin/dashboard' : '/dashboard');
     }
   }, [router]);
 
@@ -26,15 +27,23 @@ export default function Login() {
     setLoading(true);
     try {
       const res = await api.login({ email, password });
-      if (res.role) {
-        localStorage.setItem('user_role', res.role);
-      }
-      if (res.dpt) {
-        localStorage.setItem('user_dept', res.dpt);
-      }
+      if (res.role) localStorage.setItem('user_role', res.role);
+      if (res.dpt) localStorage.setItem('user_dept', res.dpt);
+      localStorage.setItem('user_is_admin', 'false');
       router.push('/dashboard');
-    } catch (err: any) {
-      setError(err.message || 'Login failed');
+    } catch (staffErr: any) {
+      if (staffErr.message?.toLowerCase().includes('not found')) {
+        try {
+          const res = await api.adminLogin({ email, password });
+          localStorage.setItem('user_role', 'admin');
+          localStorage.setItem('user_is_admin', 'true');
+          router.push('/admin/dashboard');
+        } catch (adminErr: any) {
+          setError(adminErr.message || 'Login failed');
+        }
+      } else {
+        setError(staffErr.message || 'Login failed');
+      }
     } finally {
       setLoading(false);
     }

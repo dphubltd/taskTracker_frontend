@@ -1,43 +1,44 @@
 "use client";
-import { useState, useEffect } from 'react';
-import { Eye, EyeOff, ChevronDown } from 'lucide-react';
-import Image from 'next/image';
-import { useRouter } from 'next/navigation';
-import { api } from '@/lib/api';
+import { useState, useEffect } from "react";
+import { Eye, EyeOff, ChevronDown } from "lucide-react";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { api } from "@/lib/api";
 
 export default function SignUpPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [role, setRole] = useState('developer');
-  const [dept, setDept] = useState('it');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [role, setRole] = useState("developer");
+  const [dept, setDept] = useState("it");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const router = useRouter();
 
   useEffect(() => {
-    const token = typeof window !== 'undefined' && localStorage.getItem('auth_token');
+    const token =
+      typeof window !== "undefined" && localStorage.getItem("auth_token");
     if (token) {
-      router.replace('/dashboard');
+      router.replace("/dashboard");
     }
   }, [router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
     if (password !== confirmPassword) {
-      setError('Passwords do not match');
+      setError("Passwords do not match");
       return;
     }
     setLoading(true);
     try {
       await api.signup({ name, email, password, dept, role });
-      router.push('/login');
+      router.push("/login");
     } catch (err: any) {
-      setError(err.message || 'Signup failed');
+      setError(err.message || "Signup failed");
     } finally {
       setLoading(false);
     }
@@ -46,7 +47,6 @@ export default function SignUpPage() {
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-[#E1F5FE] px-4 sm:px-6 lg:px-8 font-sans py-8">
       <div className="w-full max-w-5xl flex flex-col md:flex-row items-center justify-between gap-8 md:gap-16">
-        
         <div className="w-full md:w-1/2 flex-col items-center justify-center text-center max-sm:hidden hidden md:flex">
           <div className="w-64 h-auto mb-4">
             <Image
@@ -65,7 +65,7 @@ export default function SignUpPage() {
           <span className="block text-gray-900 text-lg font-medium mb-6">
             Task Tracker
           </span>
-          
+
           <h2 className="text-[#003A47] text-xl font-semibold mb-1">
             Create an Account
           </h2>
@@ -73,9 +73,7 @@ export default function SignUpPage() {
             Sign up to continue with the task tracker.
           </p>
 
-          {error && (
-            <p className="text-red-500 text-xs mb-4">{error}</p>
-          )}
+          {error && <p className="text-red-500 text-xs mb-4">{error}</p>}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
@@ -118,10 +116,28 @@ export default function SignUpPage() {
                     className="w-full appearance-none px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-white text-sm text-gray-700 focus:outline-none focus:ring-1 focus:ring-[#003A47] focus:border-[#003A47] pr-8 cursor-pointer"
                     required
                   >
-                    <option value="developer">Developer</option>
-                    <option value="designer">Product Designer</option>
-                    <option value="manager">Manager</option>
-                    <option value="director">Director</option>
+                    <option value="Full Stack Developer">
+                      Full Stack Developer
+                    </option>
+                    <option value=" Backend Developer">
+                      Backend Developer
+                    </option>
+                    <option value="Digital Markerter">Digital Markerter</option>
+                    <option value="Product Designer">Product Designer</option>
+                    <option value="Manager">Manager</option>
+                    <option value="Director">Director</option>
+                    <option value="VideoGrapher">VideoGrapher</option>
+                    <option value="Data Analyst">Data Analyst</option>
+                    <option value="Career Educator">Career Educator</option>
+                    <option value="Video Editor">Video Editor</option>
+                    <option value="Business Consultant">
+                      Business Consultant
+                    </option>
+                    <option value="Creative Designer">Creative Designer</option>
+                    <option value="Content Writer">Content Writer</option>
+                    <option value="Intern">Intern</option>
+                    <option value="Student">Student</option>
+                    <option value="Technical Officer">Technical Officer</option>
                   </select>
                   <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-400">
                     <ChevronDown className="h-4 w-4" />
@@ -140,9 +156,10 @@ export default function SignUpPage() {
                     className="w-full appearance-none px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-white text-sm text-gray-700 focus:outline-none focus:ring-1 focus:ring-[#003A47] focus:border-[#003A47] pr-8 cursor-pointer"
                     required
                   >
-                    <option value="it">IT</option>
-                    <option value="media">Media</option>
-                    <option value="hr">HR</option>
+                    <option value="DPHUB">Digital Productivity Hub</option>
+                    <option value="LeadPath Consulting">
+                      LeadPath Consulting
+                    </option>
                   </select>
                   <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-400">
                     <ChevronDown className="h-4 w-4" />
@@ -157,7 +174,7 @@ export default function SignUpPage() {
               </label>
               <div className="relative">
                 <input
-                  type={showPassword ? 'text' : 'password'}
+                  type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="**********"
@@ -169,7 +186,11 @@ export default function SignUpPage() {
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
                 >
-                  {showPassword ? <EyeOff className="h-4 w-4 stroke-[1.5]" /> : <Eye className="h-4 w-4 stroke-[1.5]" />}
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4 stroke-[1.5]" />
+                  ) : (
+                    <Eye className="h-4 w-4 stroke-[1.5]" />
+                  )}
                 </button>
               </div>
             </div>
@@ -180,7 +201,7 @@ export default function SignUpPage() {
               </label>
               <div className="relative">
                 <input
-                  type={showConfirmPassword ? 'text' : 'password'}
+                  type={showConfirmPassword ? "text" : "password"}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="**********"
@@ -192,7 +213,11 @@ export default function SignUpPage() {
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
                 >
-                  {showConfirmPassword ? <EyeOff className="h-4 w-4 stroke-[1.5]" /> : <Eye className="h-4 w-4 stroke-[1.5]" />}
+                  {showConfirmPassword ? (
+                    <EyeOff className="h-4 w-4 stroke-[1.5]" />
+                  ) : (
+                    <Eye className="h-4 w-4 stroke-[1.5]" />
+                  )}
                 </button>
               </div>
             </div>
@@ -202,13 +227,16 @@ export default function SignUpPage() {
               disabled={loading}
               className="w-full bg-[#003A47] text-white py-2.5 px-4 rounded-md font-medium text-sm hover:bg-[#002b35] transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#003A47] pt-3 mt-6 disabled:opacity-50"
             >
-              {loading ? 'Creating...' : 'Create Account'}
+              {loading ? "Creating..." : "Create Account"}
             </button>
           </form>
 
           <div className="text-xs text-gray-600 text-left mt-4">
-            Already has an account?{' '}
-            <button onClick={() => router.push("/login")} className="text-[#003A47] font-semibold hover:underline">
+            Already has an account?{" "}
+            <button
+              onClick={() => router.push("/login")}
+              className="text-[#003A47] font-semibold hover:underline"
+            >
               Login
             </button>
           </div>

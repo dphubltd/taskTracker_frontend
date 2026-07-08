@@ -16,7 +16,8 @@ export default function AdminLogin() {
   useEffect(() => {
     const token = typeof window !== 'undefined' && localStorage.getItem('auth_token');
     if (token) {
-      router.replace('/admin/dashboard');
+      const isAdmin = localStorage.getItem('user_is_admin');
+      router.replace(isAdmin === 'true' ? '/admin/dashboard' : '/dashboard');
     }
   }, [router]);
 
@@ -27,9 +28,22 @@ export default function AdminLogin() {
     try {
       const res = await api.adminLogin({ email, password });
       localStorage.setItem("user_role", "admin");
+      localStorage.setItem("user_is_admin", "true");
       router.push("/admin/dashboard");
-    } catch (err: any) {
-      setError(err.message || "Login failed");
+    } catch (adminErr: any) {
+      if (adminErr.message?.toLowerCase().includes('not found')) {
+        try {
+          const res = await api.login({ email, password });
+          if (res.role) localStorage.setItem('user_role', res.role);
+          if (res.dpt) localStorage.setItem('user_dept', res.dpt);
+          localStorage.setItem('user_is_admin', 'false');
+          router.push('/dashboard');
+        } catch (staffErr: any) {
+          setError(staffErr.message || "Login failed");
+        }
+      } else {
+        setError(adminErr.message || "Login failed");
+      }
     } finally {
       setLoading(false);
     }
