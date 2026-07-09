@@ -37,7 +37,7 @@ export default function EmployeeDashboard() {
   const [taskStatus, setTaskStatus] = useState("Not started");
   const [taskCompletion, setTaskCompletion] = useState(() => {
     const d = new Date();
-    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
   });
   const [submitting, setSubmitting] = useState(false);
   const [displayName, setDisplayName] = useState("User");
@@ -57,9 +57,9 @@ export default function EmployeeDashboard() {
       if (filter) params.filter = filter;
       if (q) params.q = q;
       const res = await api.getHistory(
-        Object.keys(params).length ? (params as any) : undefined
+        Object.keys(params).length ? (params as any) : undefined,
       );
-      setTasks(res.info || []);
+      setTasks((res.info || []).reverse());
       if (res.staff_name) {
         setStaffName(res.staff_name);
         setDisplayName(res.staff_name);
@@ -114,6 +114,7 @@ export default function EmployeeDashboard() {
       if (editingTask) {
         await api.updateTask(editingTask.id, {
           task: taskTitle,
+          description: taskDescription || undefined,
           status: taskStatus,
           progress: taskProgress,
           completion_date: taskCompletion || undefined,
@@ -121,6 +122,7 @@ export default function EmployeeDashboard() {
       } else {
         await api.createTask({
           task: taskTitle,
+          description: taskDescription || undefined,
           status: taskStatus,
           progress: taskProgress,
           completion_date: taskCompletion || undefined,
@@ -134,10 +136,19 @@ export default function EmployeeDashboard() {
       setTaskProgress("10%");
       setTaskStatus("Not started");
       const d = new Date();
-      setTaskCompletion(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`);
+      setTaskCompletion(
+        `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`,
+      );
       fetchTasks(taskFilter, taskSearch);
     } catch (err: any) {
       console.error(err);
+      if (
+        err.message?.includes("Authenticate") ||
+        err.message?.includes("credentials") ||
+        err.message?.includes("expired")
+      ) {
+        router.push("/login");
+      }
     } finally {
       setSubmitting(false);
     }
@@ -146,7 +157,7 @@ export default function EmployeeDashboard() {
   const handleEditTask = (task: any) => {
     setEditingTask(task);
     setTaskTitle(task.task || task.title || "");
-    setTaskDescription("");
+    setTaskDescription(task.description || "");
     setTaskProgress(task.progress || "10%");
     setTaskStatus(task.status || "In Progress");
     setTaskCompletion(task.completion_date || "");
@@ -162,15 +173,20 @@ export default function EmployeeDashboard() {
   const handleProfileSave = async () => {
     setProfileSaving(true);
     try {
-      const res = await api.updateProfile({ name: profileName, email: profileEmail, dept: profileDept, role: profileRole });
+      const res = await api.updateProfile({
+        name: profileName,
+        email: profileEmail,
+        dept: profileDept,
+        role: profileRole,
+      });
       setDisplayName(res.name);
-      localStorage.setItem('user_name', res.name);
-      if (res.dept) localStorage.setItem('user_dept', res.dept);
-      if (res.role) localStorage.setItem('user_role', res.role);
-      if (res.email) localStorage.setItem('user_email', res.email);
+      localStorage.setItem("user_name", res.name);
+      if (res.dept) localStorage.setItem("user_dept", res.dept);
+      if (res.role) localStorage.setItem("user_role", res.role);
+      if (res.email) localStorage.setItem("user_email", res.email);
       setShowProfile(false);
     } catch (err: any) {
-      console.error('Profile update failed:', err.message);
+      console.error("Profile update failed:", err.message);
     } finally {
       setProfileSaving(false);
     }
@@ -267,7 +283,7 @@ export default function EmployeeDashboard() {
                 <p className="text-xs text-gray-400 mt-0.5 max-sm:hidden">
                   Track your progress with task tracker.{" "}
                   <span className="text-gray-900 font-medium ml-1">
-                    Wed, 01 July.
+                    {new Date().toDateString()}
                   </span>
                 </p>
               </div>
@@ -277,10 +293,10 @@ export default function EmployeeDashboard() {
               <button
                 onClick={() => {
                   setProfileName(displayName);
-                  setProfileEmail(localStorage.getItem('user_email') || '');
-                  const savedDept = localStorage.getItem('user_dept') || '';
+                  setProfileEmail(localStorage.getItem("user_email") || "");
+                  const savedDept = localStorage.getItem("user_dept") || "";
                   setProfileDept(savedDept);
-                  const savedRole = localStorage.getItem('user_role') || '';
+                  const savedRole = localStorage.getItem("user_role") || "";
                   setProfileRole(savedRole);
                   setShowProfile(true);
                 }}
@@ -326,7 +342,9 @@ export default function EmployeeDashboard() {
                     <p className="text-[13px] font-medium text-gray-400">
                       Total Tasks
                     </p>
-                    <p className="text-2xl font-bold text-gray-900 mt-2">{tasks.length}</p>
+                    <p className="text-2xl font-bold text-gray-900 mt-2">
+                      {tasks.length}
+                    </p>
                   </div>
 
                   <div className="bg-[#F2FBF4] p-4 rounded-lg border border-green-50/50">
@@ -336,8 +354,10 @@ export default function EmployeeDashboard() {
                     <p className="text-2xl font-bold text-gray-900 mt-2">
                       {(() => {
                         const today = new Date();
-                        const ds = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
-                        return tasks.filter(t => (t.date||'').startsWith(ds)).length;
+                        const ds = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+                        return tasks.filter((t) =>
+                          (t.date || "").startsWith(ds),
+                        ).length;
                       })()}
                     </p>
                   </div>
@@ -347,7 +367,13 @@ export default function EmployeeDashboard() {
                       Pending Tasks
                     </p>
                     <p className="text-2xl font-bold text-gray-900 mt-2">
-                      {tasks.filter(t => t.status !== "Completed" && t.status !== "completed").length}
+                      {
+                        tasks.filter(
+                          (t) =>
+                            t.status !== "Completed" &&
+                            t.status !== "completed",
+                        ).length
+                      }
                     </p>
                   </div>
 
@@ -356,7 +382,13 @@ export default function EmployeeDashboard() {
                       Completed Tasks
                     </p>
                     <p className="text-2xl font-bold text-gray-900 mt-2">
-                      {tasks.filter(t => t.status === "Completed" || t.status === "completed").length}
+                      {
+                        tasks.filter(
+                          (t) =>
+                            t.status === "Completed" ||
+                            t.status === "completed",
+                        ).length
+                      }
                     </p>
                   </div>
                 </div>
@@ -536,7 +568,9 @@ export default function EmployeeDashboard() {
                 >
                   <X className="w-5 h-5 stroke-[1.5]" />
                 </button>
-                <span>Submitted on Wed, 01 July.</span>
+                <span>
+                  Submitted on {formatDate(selectedTask.completion_date)}.{" "}
+               </span>
                 <button
                   onClick={() => handleEditTask(selectedTask)}
                   className="ml-auto flex items-center gap-1.5 text-sm font-semibold text-[#003A47] hover:text-[#002b35] transition-colors"
@@ -565,8 +599,7 @@ export default function EmployeeDashboard() {
                     Task description
                   </h3>
                   <div className="w-full min-h-[90px] border border-gray-200 rounded-xl p-4 text-sm text-gray-800 bg-white leading-relaxed">
-                    {(selectedTask.task || selectedTask.title) &&
-                      `Create a ${selectedTask.task || selectedTask.title} for the task tracker project.`}
+                    {selectedTask.description || `Create a ${selectedTask.task || selectedTask.title} for the task tracker project.`}
                   </div>
                 </div>
 
@@ -625,7 +658,6 @@ export default function EmployeeDashboard() {
                     </div>
                   </div>
                 </div>
-
               </div>
             </div>
           </>
@@ -635,14 +667,20 @@ export default function EmployeeDashboard() {
           <>
             <div
               className="fixed inset-0 bg-black/40 z-20 "
-              onClick={() => { setShowAddTask(false); setEditingTask(null); }}
+              onClick={() => {
+                setShowAddTask(false);
+                setEditingTask(null);
+              }}
             />
             <div className="fixed inset-0 md:top-0 md:right-0 md:inset-auto h-full w-full md:max-w-[500px] bg-white shadow-xl z-40 overflow-y-auto">
               <div className="p-6 sm:p-8">
                 <div className="flex justify-end mb-4">
                   <button
                     type="button"
-                    onClick={() => { setShowAddTask(false); setEditingTask(null); }}
+                    onClick={() => {
+                      setShowAddTask(false);
+                      setEditingTask(null);
+                    }}
                     className="text-gray-900 hover:text-gray-600 transition-colors p-1"
                   >
                     <X className="w-5 h-5 stroke-[1.5]" />
@@ -652,7 +690,10 @@ export default function EmployeeDashboard() {
                 <div className="flex items-center gap-2 mb-2">
                   <button
                     type="button"
-                    onClick={() => { setShowAddTask(false); setEditingTask(null); }}
+                    onClick={() => {
+                      setShowAddTask(false);
+                      setEditingTask(null);
+                    }}
                     className="text-gray-900 hover:text-gray-600 transition-colors p-0.5"
                   >
                     <ChevronLeft className="w-6 h-6 stroke-[2]" />
@@ -663,7 +704,9 @@ export default function EmployeeDashboard() {
                 </div>
 
                 <p className="text-sm text-gray-500 font-normal mb-8 leading-relaxed">
-                  {editingTask ? "Update your task details." : "Log on your task for today and track your progress."}
+                  {editingTask
+                    ? "Update your task details."
+                    : "Log on your task for today and track your progress."}
                 </p>
 
                 <form onSubmit={handleSubmitTask} className="space-y-6">
@@ -757,7 +800,11 @@ export default function EmployeeDashboard() {
                       disabled={submitting}
                       className="w-full bg-[#003A47] text-white py-3.5 px-4 rounded-lg font-medium text-sm hover:bg-[#002b35] transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#003A47] tracking-wide disabled:opacity-50"
                     >
-                      {submitting ? "Saving..." : editingTask ? "Update Task" : "Submit Task"}
+                      {submitting
+                        ? "Saving..."
+                        : editingTask
+                          ? "Update Task"
+                          : "Submit Task"}
                     </button>
                   </div>
                 </form>
@@ -790,11 +837,17 @@ export default function EmployeeDashboard() {
 
         {showProfile && (
           <>
-            <div className="fixed inset-0 bg-black/40 z-30" onClick={() => setShowProfile(false)} />
+            <div
+              className="fixed inset-0 bg-black/40 z-30"
+              onClick={() => setShowProfile(false)}
+            />
             <div className="fixed inset-0 md:top-0 md:right-0 md:inset-auto h-full w-full md:max-w-[500px] bg-white shadow-xl z-40 overflow-y-auto">
               <div className="p-6 sm:p-8">
                 <div className="flex justify-end mb-4">
-                  <button onClick={() => setShowProfile(false)} className="text-gray-900 hover:text-gray-600 p-1">
+                  <button
+                    onClick={() => setShowProfile(false)}
+                    className="text-gray-900 hover:text-gray-600 p-1"
+                  >
                     <X className="w-5 h-5 stroke-[1.5]" />
                   </button>
                 </div>
@@ -806,7 +859,9 @@ export default function EmployeeDashboard() {
                 </p>
                 <div className="space-y-5">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Full name</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                      Full name
+                    </label>
                     <input
                       type="text"
                       value={profileName}
@@ -815,7 +870,9 @@ export default function EmployeeDashboard() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Email address</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                      Email address
+                    </label>
                     <input
                       type="email"
                       value={profileEmail}
@@ -825,7 +882,9 @@ export default function EmployeeDashboard() {
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1.5">Department</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                        Department
+                      </label>
                       <input
                         type="text"
                         value={profileDept}
@@ -834,7 +893,9 @@ export default function EmployeeDashboard() {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1.5">Role</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                        Role
+                      </label>
                       <input
                         type="text"
                         value={profileRole}

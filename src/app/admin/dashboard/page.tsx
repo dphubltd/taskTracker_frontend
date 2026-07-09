@@ -40,7 +40,7 @@ export default function AdminDashboard() {
       const allTasks = await api.getAllStaffTasks(
         Object.keys(params).length ? (params as any) : undefined,
       );
-      setTasks(allTasks.info || allTasks || []);
+      setTasks((allTasks.info || allTasks || []).reverse());
     } catch (err: any) {
       console.error("Failed to load tasks:", err.message);
     } finally {
@@ -600,7 +600,7 @@ export default function AdminDashboard() {
                 >
                   <X className="w-5 h-5 stroke-[1.5]" />
                 </button>
-                <span>Submitted on Wed, 01 July.</span>
+                <span>Submitted on {formatDate(selectedTask.completion_date)}</span>
               </div>
 
               <div className="p-6 space-y-6">

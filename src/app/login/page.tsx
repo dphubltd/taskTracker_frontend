@@ -126,7 +126,7 @@ export default function Login() {
             </div>
 
             <div className="pt-1">
-              <a href="#forgot" className="text-[#003A47] text-xs font-semibold hover:underline">
+              <a href="/forgot-password" className="text-[#003A47] text-xs font-semibold hover:underline">
                 Forgot Password?
               </a>
             </div>

@@ -25,6 +25,12 @@ async function request<T = any>(
   const data = await res.json();
 
   if (!res.ok) {
+    if (
+      typeof window !== 'undefined' &&
+      (data.info?.includes('Authenticate') || data.info?.includes('credentials') || data.info?.includes('expired'))
+    ) {
+      localStorage.removeItem('auth_token');
+    }
     throw new Error(data.info || 'Request failed');
   }
 
@@ -53,10 +59,10 @@ export const api = {
     return request<{ info: any[]; staff_name: string }>('/history/' + query, { method: 'GET' });
   },
 
-  createTask: (body: { task: string; status?: string; progress?: string; completion_date?: string }) =>
+  createTask: (body: { task: string; description?: string; status?: string; progress?: string; completion_date?: string }) =>
     request('/task/', { method: 'POST', body: JSON.stringify(body) }),
 
-  updateTask: (id: number, body: { task?: string; status?: string; progress?: string; completion_date?: string }) =>
+  updateTask: (id: number, body: { task?: string; description?: string; status?: string; progress?: string; completion_date?: string }) =>
     request(`/task/${id}/`, { method: 'PUT', body: JSON.stringify(body) }),
 
   adminLogin: (body: { email: string; password: string }) =>
@@ -79,6 +85,24 @@ export const api = {
 
   updateProfile: (body: { name?: string; email?: string; dept?: string; role?: string }) =>
     request('/auth/profile/', { method: 'PUT', body: JSON.stringify(body) }),
+
+  forgotPassword: (email: string) =>
+    request<{ info: string }>('/auth/forgot-password/', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    }),
+
+  verifyOTP: (email: string, otp: string) =>
+    request<{ info: string; token: string }>('/auth/verify-otp/', {
+      method: 'POST',
+      body: JSON.stringify({ email, otp }),
+    }),
+
+  resetPassword: (email: string, token: string, password: string) =>
+    request<{ info: string }>('/auth/reset-password/', {
+      method: 'POST',
+      body: JSON.stringify({ email, token, password }),
+    }),
 };
 
 const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
