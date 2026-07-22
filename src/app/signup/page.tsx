@@ -38,6 +38,7 @@ export default function SignUpPage() {
       await api.signup({ name, email, password, dept, role });
       router.push("/login");
     } catch (err: any) {
+      console.log(err)
       setError(err.message || "Signup failed");
     } finally {
       setLoading(false);
