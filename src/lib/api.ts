@@ -1,4 +1,4 @@
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+const API_BASE = "https://task-tracker-back-mfxy.onrender.com";
 
 async function request<T = any>(
   endpoint: string,
