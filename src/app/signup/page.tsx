@@ -158,9 +158,6 @@ export default function SignUpPage() {
                     required
                   >
                     <option value="DPHUB">Digital Productivity Hub</option>
-                    <option value="LeadPath Consulting">
-                      LeadPath Consulting
-                    </option>
                     <option value="Business Department">
                       Business Department
                     </option>
